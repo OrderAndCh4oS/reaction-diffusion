@@ -10,7 +10,7 @@ let grid = [...Array(gridWidth)].map((_, x) => [...Array(gridHeight)].map((_, y)
 
 const diffusionRateA = 1;
 const diffusionRateB = 0.5;
-const feedRate = 0.055;
+const feedRate = 0.066;
 const killRate = 0.062;
 const deltaTime = 1;
 
@@ -54,7 +54,7 @@ function makePattern(grid, width, height) {
     const pattern = [...Array(width)].map((_, x) => [...Array(height)].map((_, y) => ' '));
     for (let x = 1; x < grid.length - 1; x++) {
         for(let y = 1; y < grid[x].length -1; y++) {
-            pattern[x][y] = grid[x][y].a < grid[x][y].b ? 'X' : ' '
+            pattern[x][y] = grid[x][y].a <= grid[x][y].b ? 'X' : ' '
         }
     }
     return pattern;
@@ -72,7 +72,7 @@ function drawPattern(pattern) {
 }
 
 function run(grid) {
-    for (let i = 0; i < 33; i++) {
+    for (let i = 0; i < 31; i++) {
         const newGrid = copyGrid(grid);
         for(let x = 1; x < grid.length - 1; x++) {
             for(let y = 1; y < grid[x].length - 1; y++) {
