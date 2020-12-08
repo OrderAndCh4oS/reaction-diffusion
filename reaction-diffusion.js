@@ -2,16 +2,16 @@ const gridWidth = 20;
 const gridHeight = 20;
 
 function initGridCell(x, y) {
-    if((x >= 8 && x <= 12) && (y >= 8 && y <= 12)) return {a: 1, b: 1}
-    // return {a: 1, b: Math.random() > 0.55 ? 1 : 0;};
-    return {a: 1, b: 0};
+    // if((x >= 8 && x <= 12) && (y >= 8 && y <= 12)) return {a: 1, b: 1}
+    return {a: 1, b: Math.random() > 0.55 ? 1 : 0};
+    // return {a: 1, b: 0};
 }
 
 let grid = [...Array(gridWidth)].map((_, x) => [...Array(gridHeight)].map((_, y) => initGridCell(x, y)));
 
 const diffusionRateA = 1;
 const diffusionRateB = 0.5;
-const feedRate = 0.066;
+const feedRate = 0.055;
 const killRate = 0.062;
 const deltaTime = 1;
 
@@ -35,11 +35,11 @@ function diffusion(key, area, laplacianMatrix) {
 }
 
 function updateA(a, b, aDiffusion) {
-    return a + (diffusionRateA * (aDiffusion * aDiffusion) * a - a * b * b + feedRate * (1 - a)) * deltaTime;
+    return a + (diffusionRateA * aDiffusion * aDiffusion * a - a * b * b + feedRate * (1 - a)) * deltaTime;
 }
 
 function updateB(a, b, bDiffusion) {
-    return b + (diffusionRateB * (bDiffusion * bDiffusion) * b + a * b * b - (killRate + feedRate) * b) * deltaTime;
+    return b + (diffusionRateB * bDiffusion * bDiffusion * b + a * b * b - (killRate + feedRate) * b) * deltaTime;
 }
 
 function copyGrid(grid) {
@@ -73,7 +73,7 @@ function drawPattern(pattern) {
 }
 
 function run(grid) {
-    for (let i = 0; i < 31; i++) {
+    for (let i = 0; i < 10; i++) {
         const newGrid = copyGrid(grid);
         for(let x = 1; x < grid.length - 1; x++) {
             for(let y = 1; y < grid[x].length - 1; y++) {
