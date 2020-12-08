@@ -3,6 +3,7 @@ const gridHeight = 20;
 
 function initGridCell(x, y) {
     if((x >= 8 && x <= 12) && (y >= 8 && y <= 12)) return {a: 1, b: 1}
+    // return {a: 1, b: Math.random() > 0.55 ? 1 : 0;};
     return {a: 1, b: 0};
 }
 
