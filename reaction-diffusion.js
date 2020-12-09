@@ -1,6 +1,6 @@
 const canvas = document.getElementById('canvas');
 const context = canvas.getContext('2d');
-const size = 100;
+const size = 250;
 canvas.style.width = size + 'px';
 canvas.style.height = size + 'px';
 const scale = window.devicePixelRatio;
@@ -12,7 +12,7 @@ const gridWidth = size;
 const gridHeight = size;
 
 function initGridCellBox(x, y) {
-    if((x >= 45 && x <= 55) && (y >= 45 && y <= 55)) return {a: 1, b: 1};
+    if((x >= 45 * 2.5 && x <= 55 * 2.5) && (y >= 45 * 2.5 && y <= 55 * 2.5)) return {a: 0, b: 1};
     return {a: 1, b: 0};
 }
 
@@ -25,8 +25,8 @@ let grid = [...Array(gridWidth)].map(
 
 const diffusionRateA = 1;
 const diffusionRateB = 0.5;
-const feedRate = 0.0545;
-const killRate = 0.062;
+const feedRate = 0.0367;
+const killRate = 0.0649;
 const deltaTime = 1;
 
 const laplacianMatrix = [
@@ -41,17 +41,16 @@ function round(value, precision) {
 }
 
 function diffusion(key, area, laplacianMatrix) {
-    const laplacianSum = laplacianMatrix.flat(1).reduce((a, b) => round(a + b, 2), 0);
+    // const laplacianSum = laplacianMatrix.flat(1).reduce((a, b) => round(a + b, 2), 0);
     let sum = 0;
     for(let x = 0; x < area.length; x++) {
         for(let y = 0; y < area[x].length; y++) {
-            sum = round(sum + round(area[x][y][key] * laplacianMatrix[x][y], 5), 3);
+            sum = sum + area[x][y][key] * laplacianMatrix[x][y];
         }
     }
 
-    return laplacianSum > 0 ? sum / laplacianSum : sum;
+    return sum;
 }
-
 
 // // Guess at the need to spread the values out around the current cell
 // function applyDiffusion(key, value, x, y, grid, laplacianMatrix) {
@@ -75,8 +74,7 @@ function updateA(a, b, aDiffusion) {
 }
 
 function updateB(a, b, bDiffusion) {
-    return b + (((diffusionRateB * bDiffusion) + (a * b * b)) - ((killRate + feedRate) * b)) *
-        deltaTime;
+    return b + (((diffusionRateB * bDiffusion) + (a * b * b)) - ((killRate + feedRate) * b)) * deltaTime;
 }
 
 function copyGrid(grid) {
@@ -123,8 +121,10 @@ function update(grid) {
                 [grid[x][left], grid[x][y], grid[x][right]],
                 [grid[bottom][left], grid[bottom][y], grid[bottom][right]],
             ];
+
             const aDiffusion = diffusion('a', area, laplacianMatrix);
             const bDiffusion = diffusion('b', area, laplacianMatrix);
+
             const a = updateA(grid[x][y].a, grid[x][y].b, aDiffusion);
             const b = updateB(grid[x][y].a, grid[x][y].b, bDiffusion);
             // if(isNaN(a)) throw new Error('A is NaN');
@@ -152,7 +152,6 @@ function draw() {
         }
     }
     update(grid);
-    if(i > 1000) return;
     i++;
     console.log(i);
     setTimeout(draw, 100);
