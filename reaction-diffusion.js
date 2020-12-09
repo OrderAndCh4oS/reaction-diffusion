@@ -67,7 +67,8 @@ function updateA(a, b, aDiffusion) {
 }
 
 function updateB(a, b, bDiffusion) {
-    return b + (((diffusionRateB * bDiffusion) + (a * b * b)) - ((killRate + feedRate) * b)) * deltaTime;
+    return b + (((diffusionRateB * bDiffusion) + (a * b * b)) - ((killRate + feedRate) * b)) *
+        deltaTime;
 }
 
 function copyGrid(grid) {
@@ -104,16 +105,15 @@ function update(grid) {
     const newGrid = copyGrid(grid);
     for(let x = 0; x < grid.length; x++) {
         for(let y = 0; y < grid[x].length; y++) {
-            const edges = {
-                top: x > 0 ? x - 1 : grid.length - 1,
-                bottom: x < grid.length - 1 ? x + 1 : 0,
-                left: y > 0 ? y - 1 : grid[x].length - 1,
-                right: y < grid[x].length - 1 ? y + 1 : 0,
-            }
+            const top = x > 0 ? x - 1 : grid.length - 1;
+            const bottom = x < grid.length - 1 ? x + 1 : 0;
+            const left = y > 0 ? y - 1 : grid[x].length - 1;
+            const right = y < grid[x].length - 1 ? y + 1 : 0;
+
             const area = [
-                [grid[edges.top][edges.left], grid[edges.top][y], grid[edges.top][edges.right]],
-                [grid[x][edges.left], grid[x][y], grid[x][edges.right]],
-                [grid[edges.bottom][edges.left], grid[edges.bottom][y], grid[edges.bottom][edges.right]],
+                [grid[top][left], grid[top][y], grid[top][right]],
+                [grid[x][left], grid[x][y], grid[x][right]],
+                [grid[bottom][left], grid[bottom][y], grid[bottom][right]],
             ];
             const aDiffusion = diffusion('a', area, laplacianMatrix);
             const bDiffusion = diffusion('b', area, laplacianMatrix);
@@ -131,6 +131,8 @@ function update(grid) {
     return newGrid;
 }
 
+let i = 0;
+
 function draw() {
     context.clearRect(0, 0, canvas.width, canvas.height);
     for(let x = 1; x < grid.length - 1; x++) {
@@ -141,8 +143,11 @@ function draw() {
             context.fillRect(x, y, 1, 1);
         }
     }
-    grid = update(grid);
+    update(grid);
+    if(i > 1000) return;
+    i++;
+    console.log(i);
+    setTimeout(draw, 100);
 }
 
-setInterval(draw, 2000);
-
+draw();
