@@ -1,6 +1,6 @@
 const canvas = document.getElementById('canvas');
 const context = canvas.getContext('2d');
-const size = 250;
+const size = 1000;
 canvas.style.width = size + 'px';
 canvas.style.height = size + 'px';
 const scale = window.devicePixelRatio;
@@ -12,10 +12,10 @@ const gridWidth = size;
 const gridHeight = size;
 
 function initGridCell(x, y) {
-    // if(x === 0 || x === size - 1 || y === 0 || y === size - 1) return {a: 1, b: 1}
-    // return {a: 1, b: Math.random() > 0.1 ? 1 : 0};
-    if((x >= 100 && x <= 150) && (y >= 100 && y <= 150)) return {a: 1, b: 1}
-    return {a: 1, b: 0};
+    if(x === 0 || x === size - 1 || y === 0 || y === size - 1) return {a: 1, b: 1};
+    return {a: 1, b: Math.random() > 0.5 ? 1 : 0};
+    // if((x >= 450 && x <= 550) && (y >= 450 && y <= 550)) return {a: 1, b: 1};
+    // return {a: 1, b: 0};
 }
 
 let grid = [...Array(gridWidth)].map(
@@ -23,7 +23,7 @@ let grid = [...Array(gridWidth)].map(
 
 const diffusionRateA = 1;
 const diffusionRateB = 0.5;
-const feedRate = 0.055;
+const feedRate = 0.0545;
 const killRate = 0.062;
 const deltaTime = 1;
 
@@ -39,23 +39,24 @@ function round(value, precision) {
 }
 
 function diffusion(key, area, laplacianMatrix) {
-    const laplacianSum = laplacianMatrix.flat(1).reduce((a, b) => round(a + b, 2), 0)
+    const laplacianSum = laplacianMatrix.flat(1).reduce((a, b) => round(a + b, 2), 0);
     let sum = 0;
     for(let x = 0; x < area.length; x++) {
         for(let y = 0; y < area[x].length; y++) {
-            sum = round(sum + round(area[x][y][key] * laplacianMatrix[x][y], 3), 3);
+            sum = round(sum + round(area[x][y][key] * laplacianMatrix[x][y], 5), 3);
         }
     }
-    // console.log(key, 'sum', sum);
+
     return laplacianSum > 0 ? sum / laplacianSum : sum;
 }
 
 function updateA(a, b, aDiffusion) {
-    return round(a + (diffusionRateA * aDiffusion * a - a * b * b + feedRate * (1 - a)) * deltaTime, 3);
+    return a + ((diffusionRateA * aDiffusion) - (a * b * b) + (feedRate * (1 - a))) * deltaTime;
 }
 
 function updateB(a, b, bDiffusion) {
-    return round(b + (diffusionRateB * bDiffusion * b + a * b * b - (killRate + feedRate) * b) * deltaTime, 3);
+    return b + (((diffusionRateB * bDiffusion) + (a * b * b)) - ((killRate + feedRate) * b)) *
+        deltaTime;
 }
 
 function copyGrid(grid) {
@@ -69,8 +70,8 @@ function copyGrid(grid) {
 
 function makePattern(grid, width, height) {
     const pattern = [...Array(width)].map((_, x) => [...Array(height)].map((_, y) => ' '));
-    for(let x = 1; x < grid.length - 1; x++) {
-        for(let y = 1; y < grid[x].length - 1; y++) {
+    for(let x = 0; x < grid.length; x++) {
+        for(let y = 0; y < grid[x].length; y++) {
             pattern[x][y] = grid[x][y].a <= grid[x][y].b ? 'X' : ' ';
         }
     }
@@ -90,17 +91,25 @@ function drawPattern(pattern) {
 
 function update(grid) {
     const newGrid = copyGrid(grid);
-    for(let x = 1; x < grid.length - 1; x++) {
-        for(let y = 1; y < grid[x].length - 1; y++) {
+    for(let x = 0; x < grid.length; x++) {
+        for(let y = 0; y < grid[x].length; y++) {
+            const top = x > 0 ? x - 1 : grid.length - 1;
+            const bottom = x < grid.length - 1 ? x + 1 : 0;
+            const left = y > 0 ? y - 1 : grid[x].length - 1;
+            const right = y < grid[x].length - 1 ? y + 1 : 0;
             const area = [
-                [grid[x - 1][y - 1], grid[x - 1][y], grid[x - 1][y + 1]],
-                [grid[x][y - 1], grid[x][y], grid[x][y + 1]],
-                [grid[x + 1][y - 1], grid[x + 1][y], grid[x + 1][y + 1]],
+                [grid[top][left], grid[top][y], grid[top][right]],
+                [grid[x][left], grid[x][y], grid[x][right]],
+                [grid[bottom][left], grid[bottom][y], grid[bottom][right]],
             ];
             const aDiffusion = diffusion('a', area, laplacianMatrix);
             const bDiffusion = diffusion('b', area, laplacianMatrix);
-            newGrid[x][y].a = updateA(grid[x][y].a, grid[x][y].b, aDiffusion);
-            newGrid[x][y].b = updateB(grid[x][y].a, grid[x][y].b, bDiffusion);
+            const a = updateA(grid[x][y].a, grid[x][y].b, aDiffusion);
+            const b = updateB(grid[x][y].a, grid[x][y].b, bDiffusion);
+            if(isNaN(a)) throw new Error('A is NaN');
+            if(isNaN(b)) throw new Error('B is NaN');
+            newGrid[x][y].a = a;
+            newGrid[x][y].b = b;
         }
     }
 
@@ -111,6 +120,8 @@ function draw() {
     context.clearRect(0, 0, canvas.width, canvas.height);
     for(let x = 1; x < grid.length - 1; x++) {
         for(let y = 1; y < grid[x].length - 1; y++) {
+            if(grid[x][y].a > 1 || grid[x][y].a < 0) throw new Error('A is out of range');
+            if(grid[x][y].b > 1 || grid[x][y].b < 0) throw new Error('B is out of range');
             context.fillStyle = grid[x][y].a > grid[x][y].b ? 'white' : 'black';
             context.fillRect(x, y, 1, 1);
         }
@@ -118,6 +129,5 @@ function draw() {
     grid = update(grid);
 }
 
-draw();
+setInterval(draw, 2000);
 
-setInterval(draw, 1000);
