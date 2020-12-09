@@ -11,15 +11,17 @@ context.scale(scale, scale);
 const gridWidth = size;
 const gridHeight = size;
 
-function initGridCell(x, y) {
-    if(x === 0 || x === size - 1 || y === 0 || y === size - 1) return {a: 1, b: 1};
-    // return {a: 1, b: Math.random() > 0.5 ? 1 : 0};
+function initGridCellBox(x, y) {
     if((x >= 45 && x <= 55) && (y >= 45 && y <= 55)) return {a: 1, b: 1};
     return {a: 1, b: 0};
 }
 
+function initGridCellRand(x, y) {
+    return {a: 1, b: Math.random() > 0.5 ? 1 : 0};
+}
+
 let grid = [...Array(gridWidth)].map(
-    (_, x) => [...Array(gridHeight)].map((_, y) => initGridCell(x, y)));
+    (_, x) => [...Array(gridHeight)].map((_, y) => initGridCellBox(x, y)));
 
 const diffusionRateA = 1;
 const diffusionRateB = 0.5;
@@ -50,15 +52,21 @@ function diffusion(key, area, laplacianMatrix) {
     return laplacianSum > 0 ? sum / laplacianSum : sum;
 }
 
-// function applyDiffusion(key, value, x, y, edges, grid, laplacianMatrix) {
-//     grid[edges.top][edges.left][key] = value * laplacianMatrix[0][0];
-//     grid[x][edges.left][key] = value * laplacianMatrix[1][0];
-//     grid[edges.bottom][edges.left][key] = value * laplacianMatrix[2][0];
-//     grid[edges.top][y][key] = value * laplacianMatrix[0][1];
-//     grid[edges.bottom][y][key] = value * laplacianMatrix[2][1];
-//     grid[edges.top][edges.right][key] = value * laplacianMatrix[0][2];
-//     grid[x][edges.right][key] = value * laplacianMatrix[1][2];
-//     grid[edges.bottom][edges.right][key] = value * laplacianMatrix[2][2];
+
+// // Guess at the need to spread the values out around the current cell
+// function applyDiffusion(key, value, x, y, grid, laplacianMatrix) {
+//     const top = x > 0 ? x - 1 : grid.length - 1;
+//     const bottom = x < grid.length - 1 ? x + 1 : 0;
+//     const left = y > 0 ? y - 1 : grid[x].length - 1;
+//     const right = y < grid[x].length - 1 ? y + 1 : 0;
+//     grid[top][left][key] = value * laplacianMatrix[0][0];
+//     grid[x][left][key] = value * laplacianMatrix[1][0];
+//     grid[bottom][left][key] = value * laplacianMatrix[2][0];
+//     grid[top][y][key] = value * laplacianMatrix[0][1];
+//     grid[bottom][y][key] = value * laplacianMatrix[2][1];
+//     grid[top][right][key] = value * laplacianMatrix[0][2];
+//     grid[x][right][key] = value * laplacianMatrix[1][2];
+//     grid[bottom][right][key] = value * laplacianMatrix[2][2];
 //     // grid[x][y][key] = grid[x][y][key] * laplacianMatrix[1][1];
 // }
 
@@ -123,8 +131,8 @@ function update(grid) {
             // if(isNaN(b)) throw new Error('B is NaN');
             newGrid[x][y].a = a;
             newGrid[x][y].b = b;
-            // applyDiffusion('a', grid[x][y].a, x, y, edges, newGrid, laplacianMatrix);
-            // applyDiffusion('b', grid[x][y].b, x, y, edges, newGrid, laplacianMatrix);
+            // applyDiffusion('a', grid[x][y].a, x, y, newGrid, laplacianMatrix);
+            // applyDiffusion('b', grid[x][y].b, x, y, newGrid, laplacianMatrix);
         }
     }
 
