@@ -119,8 +119,8 @@ function draw() {
     context.clearRect(0, 0, canvas.width, canvas.height);
     for(let x = 1; x < grid.length - 1; x++) {
         for(let y = 1; y < grid[x].length - 1; y++) {
-            if(grid[x][y].a > 1 || grid[x][y].a < 0) throw new Error('A is out of range');
-            if(grid[x][y].b > 1 || grid[x][y].b < 0) throw new Error('B is out of range');
+            // if(grid[x][y].a > 1 || grid[x][y].a < 0) throw new Error('A is out of range');
+            // if(grid[x][y].b > 1 || grid[x][y].b < 0) throw new Error('B is out of range');
             context.fillStyle = grid[x][y].a > grid[x][y].b ? 'white' : 'black';
             context.fillRect(x, y, 1, 1);
         }
