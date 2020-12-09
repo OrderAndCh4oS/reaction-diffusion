@@ -50,6 +50,18 @@ function diffusion(key, area, laplacianMatrix) {
     return laplacianSum > 0 ? sum / laplacianSum : sum;
 }
 
+// function applyDiffusion(key, value, x, y, edges, grid, laplacianMatrix) {
+//     grid[edges.top][edges.left][key] = value * laplacianMatrix[0][0];
+//     grid[x][edges.left][key] = value * laplacianMatrix[1][0];
+//     grid[edges.bottom][edges.left][key] = value * laplacianMatrix[2][0];
+//     grid[edges.top][y][key] = value * laplacianMatrix[0][1];
+//     grid[edges.bottom][y][key] = value * laplacianMatrix[2][1];
+//     grid[edges.top][edges.right][key] = value * laplacianMatrix[0][2];
+//     grid[x][edges.right][key] = value * laplacianMatrix[1][2];
+//     grid[edges.bottom][edges.right][key] = value * laplacianMatrix[2][2];
+//     // grid[x][y][key] = grid[x][y][key] * laplacianMatrix[1][1];
+// }
+
 function updateA(a, b, aDiffusion) {
     return a + ((diffusionRateA * aDiffusion) - (a * b * b) + (feedRate * (1 - a))) * deltaTime;
 }
@@ -92,14 +104,16 @@ function update(grid) {
     const newGrid = copyGrid(grid);
     for(let x = 0; x < grid.length; x++) {
         for(let y = 0; y < grid[x].length; y++) {
-            const top = x > 0 ? x - 1 : grid.length - 1;
-            const bottom = x < grid.length - 1 ? x + 1 : 0;
-            const left = y > 0 ? y - 1 : grid[x].length - 1;
-            const right = y < grid[x].length - 1 ? y + 1 : 0;
+            const edges = {
+                top: x > 0 ? x - 1 : grid.length - 1,
+                bottom: x < grid.length - 1 ? x + 1 : 0,
+                left: y > 0 ? y - 1 : grid[x].length - 1,
+                right: y < grid[x].length - 1 ? y + 1 : 0,
+            }
             const area = [
-                [grid[top][left], grid[top][y], grid[top][right]],
-                [grid[x][left], grid[x][y], grid[x][right]],
-                [grid[bottom][left], grid[bottom][y], grid[bottom][right]],
+                [grid[edges.top][edges.left], grid[edges.top][y], grid[edges.top][edges.right]],
+                [grid[x][edges.left], grid[x][y], grid[x][edges.right]],
+                [grid[edges.bottom][edges.left], grid[edges.bottom][y], grid[edges.bottom][edges.right]],
             ];
             const aDiffusion = diffusion('a', area, laplacianMatrix);
             const bDiffusion = diffusion('b', area, laplacianMatrix);
@@ -109,6 +123,8 @@ function update(grid) {
             // if(isNaN(b)) throw new Error('B is NaN');
             newGrid[x][y].a = a;
             newGrid[x][y].b = b;
+            // applyDiffusion('a', grid[x][y].a, x, y, edges, newGrid, laplacianMatrix);
+            // applyDiffusion('b', grid[x][y].b, x, y, edges, newGrid, laplacianMatrix);
         }
     }
 
