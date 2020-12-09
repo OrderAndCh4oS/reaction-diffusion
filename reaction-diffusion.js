@@ -1,6 +1,6 @@
 const canvas = document.getElementById('canvas');
 const context = canvas.getContext('2d');
-const size = 1000;
+const size = 100;
 canvas.style.width = size + 'px';
 canvas.style.height = size + 'px';
 const scale = window.devicePixelRatio;
@@ -13,9 +13,9 @@ const gridHeight = size;
 
 function initGridCell(x, y) {
     if(x === 0 || x === size - 1 || y === 0 || y === size - 1) return {a: 1, b: 1};
-    return {a: 1, b: Math.random() > 0.5 ? 1 : 0};
-    // if((x >= 450 && x <= 550) && (y >= 450 && y <= 550)) return {a: 1, b: 1};
-    // return {a: 1, b: 0};
+    // return {a: 1, b: Math.random() > 0.5 ? 1 : 0};
+    if((x >= 45 && x <= 55) && (y >= 45 && y <= 55)) return {a: 1, b: 1};
+    return {a: 1, b: 0};
 }
 
 let grid = [...Array(gridWidth)].map(
@@ -55,8 +55,7 @@ function updateA(a, b, aDiffusion) {
 }
 
 function updateB(a, b, bDiffusion) {
-    return b + (((diffusionRateB * bDiffusion) + (a * b * b)) - ((killRate + feedRate) * b)) *
-        deltaTime;
+    return b + (((diffusionRateB * bDiffusion) + (a * b * b)) - ((killRate + feedRate) * b)) * deltaTime;
 }
 
 function copyGrid(grid) {
@@ -106,8 +105,8 @@ function update(grid) {
             const bDiffusion = diffusion('b', area, laplacianMatrix);
             const a = updateA(grid[x][y].a, grid[x][y].b, aDiffusion);
             const b = updateB(grid[x][y].a, grid[x][y].b, bDiffusion);
-            if(isNaN(a)) throw new Error('A is NaN');
-            if(isNaN(b)) throw new Error('B is NaN');
+            // if(isNaN(a)) throw new Error('A is NaN');
+            // if(isNaN(b)) throw new Error('B is NaN');
             newGrid[x][y].a = a;
             newGrid[x][y].b = b;
         }
