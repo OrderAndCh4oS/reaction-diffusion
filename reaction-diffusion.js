@@ -12,10 +12,10 @@ const gridWidth = size;
 const gridHeight = size;
 
 function initGridCell(x, y) {
-    if(x === 0 || x === size - 1 || y === 0 || y === size - 1) return {a: 1, b: 1}
-    if((x >= 100 && x <= 150) && (y >= 100 && y <= 150)) return {a: 1, b: 1}
-    // return {a: 1, b: Math.random() > 0.20 ? 1 : 0};
-    return {a: 1, b: 0};
+    // if(x === 0 || x === size - 1 || y === 0 || y === size - 1) return {a: 1, b: 1}
+    return {a: 1, b: Math.random() > 0.1 ? 1 : 0};
+    // if((x >= 45 && x <= 55) && (y >= 45 && y <= 55)) return {a: 1, b: 1}
+    // return {a: 1, b: 0};
 }
 
 let grid = [...Array(gridWidth)].map(
@@ -23,7 +23,7 @@ let grid = [...Array(gridWidth)].map(
 
 const diffusionRateA = 1;
 const diffusionRateB = 0.5;
-const feedRate = 0.035;
+const feedRate = 0.055;
 const killRate = 0.062;
 const deltaTime = 1;
 
@@ -47,14 +47,11 @@ function diffusion(key, area, laplacianMatrix) {
 }
 
 function updateA(a, b, aDiffusion) {
-    return a + (diffusionRateA * aDiffusion * aDiffusion * a - a * b * b + feedRate * (1 - a)) *
-        deltaTime;
+    return a + (diffusionRateA * (aDiffusion * aDiffusion) * a - a * (b * b) + feedRate * (1 - a)) * deltaTime;
 }
 
 function updateB(a, b, bDiffusion) {
-    return b +
-        (diffusionRateB * bDiffusion * bDiffusion * b + a * b * b - (killRate + feedRate) * b) *
-        deltaTime;
+    return b + (diffusionRateB * (bDiffusion * bDiffusion) * b + a * (b * b) - (killRate + feedRate) * b) * deltaTime;
 }
 
 function copyGrid(grid) {
@@ -106,16 +103,16 @@ function update(grid) {
 }
 
 function draw() {
-    grid = update(grid);
     context.clearRect(0, 0, canvas.width, canvas.height);
     for(let x = 1; x < grid.length - 1; x++) {
         for(let y = 1; y < grid[x].length - 1; y++) {
-            context.fillStyle = grid[x][y].a >= grid[x][y].b ? 'white' : 'black';
+            context.fillStyle = grid[x][y].a > grid[x][y].b ? 'white' : 'black';
             context.fillRect(x, y, 1, 1);
         }
     }
+    grid = update(grid);
 }
 
 draw();
 
-setInterval(draw, 1500);
+setInterval(draw, 600);
