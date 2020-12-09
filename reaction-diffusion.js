@@ -1,6 +1,6 @@
 const canvas = document.getElementById('canvas');
 const context = canvas.getContext('2d');
-const size = 250;
+const size = 10;
 canvas.style.width = size + 'px';
 canvas.style.height = size + 'px';
 const scale = window.devicePixelRatio;
@@ -12,10 +12,10 @@ const gridWidth = size;
 const gridHeight = size;
 
 function initGridCell(x, y) {
-    // if(x === 0 || x === size - 1 || y === 0 || y === size - 1) return {a: 1, b: 1}
-    return {a: 1, b: Math.random() > 0.1 ? 1 : 0};
-    // if((x >= 45 && x <= 55) && (y >= 45 && y <= 55)) return {a: 1, b: 1}
-    // return {a: 1, b: 0};
+    if(x === 0 || x === size - 1 || y === 0 || y === size - 1) return {a: 1, b: 1}
+    // return {a: 1, b: Math.random() > 0.1 ? 1 : 0};
+    if((x >= 45 && x <= 55) && (y >= 45 && y <= 55)) return {a: 1, b: 1}
+    return {a: 1, b: 0};
 }
 
 let grid = [...Array(gridWidth)].map(
@@ -35,15 +35,13 @@ const laplacianMatrix = [
 
 function diffusion(key, area, laplacianMatrix) {
     let sum = 0;
-    let areaSum = 0;
     for(let x = 0; x < area.length; x++) {
         for(let y = 0; y < area[x].length; y++) {
             sum += area[x][y][key] * laplacianMatrix[x][y];
-            areaSum += area[x][y][key];
         }
     }
 
-    return sum / areaSum;
+    return sum;
 }
 
 function updateA(a, b, aDiffusion) {
@@ -110,6 +108,7 @@ function draw() {
             context.fillRect(x, y, 1, 1);
         }
     }
+    console.log(grid);
     grid = update(grid);
 }
 
