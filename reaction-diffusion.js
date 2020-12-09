@@ -1,6 +1,6 @@
 const canvas = document.getElementById('canvas');
 const context = canvas.getContext('2d');
-const size = 10;
+const size = 250;
 canvas.style.width = size + 'px';
 canvas.style.height = size + 'px';
 const scale = window.devicePixelRatio;
@@ -12,9 +12,9 @@ const gridWidth = size;
 const gridHeight = size;
 
 function initGridCell(x, y) {
-    if(x === 0 || x === size - 1 || y === 0 || y === size - 1) return {a: 1, b: 1}
+    // if(x === 0 || x === size - 1 || y === 0 || y === size - 1) return {a: 1, b: 1}
     // return {a: 1, b: Math.random() > 0.1 ? 1 : 0};
-    if((x >= 45 && x <= 55) && (y >= 45 && y <= 55)) return {a: 1, b: 1}
+    if((x >= 100 && x <= 150) && (y >= 100 && y <= 150)) return {a: 1, b: 1}
     return {a: 1, b: 0};
 }
 
@@ -33,23 +33,29 @@ const laplacianMatrix = [
     [0.05, 0.2, 0.05],
 ];
 
+function round(value, precision) {
+    const multiplier = Math.pow(10, precision || 0);
+    return Math.round(value * multiplier) / multiplier;
+}
+
 function diffusion(key, area, laplacianMatrix) {
+    const laplacianSum = laplacianMatrix.flat(1).reduce((a, b) => round(a + b, 2), 0)
     let sum = 0;
     for(let x = 0; x < area.length; x++) {
         for(let y = 0; y < area[x].length; y++) {
-            sum += area[x][y][key] * laplacianMatrix[x][y];
+            sum = round(sum + round(area[x][y][key] * laplacianMatrix[x][y], 3), 3);
         }
     }
-
-    return sum;
+    // console.log(key, 'sum', sum);
+    return laplacianSum > 0 ? sum / laplacianSum : sum;
 }
 
 function updateA(a, b, aDiffusion) {
-    return a + (diffusionRateA * (aDiffusion * aDiffusion) * a - a * (b * b) + feedRate * (1 - a)) * deltaTime;
+    return round(a + (diffusionRateA * aDiffusion * a - a * b * b + feedRate * (1 - a)) * deltaTime, 3);
 }
 
 function updateB(a, b, bDiffusion) {
-    return b + (diffusionRateB * (bDiffusion * bDiffusion) * b + a * (b * b) - (killRate + feedRate) * b) * deltaTime;
+    return round(b + (diffusionRateB * bDiffusion * b + a * b * b - (killRate + feedRate) * b) * deltaTime, 3);
 }
 
 function copyGrid(grid) {
@@ -97,6 +103,7 @@ function update(grid) {
             newGrid[x][y].b = updateB(grid[x][y].a, grid[x][y].b, bDiffusion);
         }
     }
+
     return newGrid;
 }
 
@@ -108,10 +115,9 @@ function draw() {
             context.fillRect(x, y, 1, 1);
         }
     }
-    console.log(grid);
     grid = update(grid);
 }
 
 draw();
 
-setInterval(draw, 600);
+setInterval(draw, 1000);
