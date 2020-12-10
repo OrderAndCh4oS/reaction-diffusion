@@ -25,21 +25,13 @@ const diffusionRateB = 0.5;
 const feedRate = 0.0545;
 const killRate = 0.062;
 const deltaTime = 1.4;
+const killPlusFeed = killRate + feedRate;
 
 const laplacianMatrix = [
     [0.05, 0.2, 0.05],
     [0.2, -1, 0.2],
     [0.05, 0.2, 0.05],
 ];
-
-function updateA(a, b, aDiffusion) {
-    return a + ((diffusionRateA * aDiffusion) - (a * b * b) + (feedRate * (1 - a))) * deltaTime;
-}
-
-function updateB(a, b, bDiffusion) {
-    return b + (((diffusionRateB * bDiffusion) + (a * b * b)) - ((killRate + feedRate) * b)) *
-        deltaTime;
-}
 
 function update() {
     for(let x = 0; x < gridFrom.length; x++) {
@@ -49,9 +41,7 @@ function update() {
             const left = y > 0 ? y - 1 : gridFrom[x].length - 1;
             const right = y < gridFrom[x].length - 1 ? y + 1 : 0;
 
-            let aDiffusion = 0;
-
-            aDiffusion += gridFrom[top][left]['a'] * laplacianMatrix[0][0];
+            let aDiffusion = gridFrom[top][left]['a'] * laplacianMatrix[0][0];
             aDiffusion += gridFrom[top][y]['a'] * laplacianMatrix[0][1];
             aDiffusion += gridFrom[top][right]['a'] * laplacianMatrix[0][2];
             aDiffusion += gridFrom[x][left]['a'] * laplacianMatrix[1][0];
@@ -61,9 +51,7 @@ function update() {
             aDiffusion += gridFrom[bottom][y]['a'] * laplacianMatrix[2][1];
             aDiffusion += gridFrom[bottom][right]['a'] * laplacianMatrix[2][2];
 
-            let bDiffusion = 0;
-
-            bDiffusion += gridFrom[top][left]['b'] * laplacianMatrix[0][0];
+            let bDiffusion = gridFrom[top][left]['b'] * laplacianMatrix[0][0];
             bDiffusion += gridFrom[top][y]['b'] * laplacianMatrix[0][1];
             bDiffusion += gridFrom[top][right]['b'] * laplacianMatrix[0][2];
             bDiffusion += gridFrom[x][left]['b'] * laplacianMatrix[1][0];
@@ -73,10 +61,11 @@ function update() {
             bDiffusion += gridFrom[bottom][y]['b'] * laplacianMatrix[2][1];
             bDiffusion += gridFrom[bottom][right]['b'] * laplacianMatrix[2][2];
 
-            const a = updateA(gridFrom[x][y].a, gridFrom[x][y].b, aDiffusion);
-            const b = updateB(gridFrom[x][y].a, gridFrom[x][y].b, bDiffusion);
-            gridTo[x][y].a = a;
-            gridTo[x][y].b = b;
+            const a = gridFrom[x][y].a;
+            const b = gridFrom[x][y].b;
+
+            gridTo[x][y].a = a + ((diffusionRateA * aDiffusion) - (a * b * b) + (feedRate * (1 - a))) * deltaTime;
+            gridTo[x][y].b = b + (((diffusionRateB * bDiffusion) + (a * b * b)) - ((killPlusFeed) * b)) * deltaTime;
         }
     }
     gridFrom = [...gridTo];
