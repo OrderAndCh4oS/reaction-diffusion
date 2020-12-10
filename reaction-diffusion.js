@@ -16,10 +16,6 @@ function initGridCellBox(x, y) {
     return {a: 1, b: 0};
 }
 
-function initGridCellRand(x, y) {
-    return {a: 1, b: Math.random() > 0.5 ? 1 : 0};
-}
-
 let gridFrom = [...Array(gridWidth)].map((_, x) => [...Array(gridHeight)].map((_, y) => initGridCellBox(x, y)));
 
 let gridTo = [...Array(gridWidth)].map((_, x) => [...Array(gridHeight)].map((_, y) => ({a: 1, b: 0})));
@@ -43,15 +39,6 @@ function updateA(a, b, aDiffusion) {
 function updateB(a, b, bDiffusion) {
     return b + (((diffusionRateB * bDiffusion) + (a * b * b)) - ((killRate + feedRate) * b)) *
         deltaTime;
-}
-
-function copyGrid(grid) {
-    const length = grid.length;
-    const newGrid = Array(length);
-    for(let i = 0; i < length; i++) {
-        newGrid[i] = grid[i].slice(0);
-    }
-    return newGrid;
 }
 
 function update() {
