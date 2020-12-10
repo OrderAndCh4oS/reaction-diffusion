@@ -1,6 +1,6 @@
+const size = 250;
 const canvas = document.getElementById('canvas');
 const context = canvas.getContext('2d');
-const size = 250;
 canvas.style.width = size + 'px';
 canvas.style.height = size + 'px';
 const scale = window.devicePixelRatio;
@@ -33,6 +33,14 @@ const laplacianMatrix = [
     [0.05, 0.2, 0.05],
 ];
 
+function getA(a, aDiffusion, b) {
+    return a + ((diffusionRateA * aDiffusion) - (a * b * b) + (feedRate * (1 - a))) * deltaTime;
+}
+
+function getB(b, bDiffusion, a) {
+    return b + (((diffusionRateB * bDiffusion) + (a * b * b)) - ((killPlusFeed) * b)) * deltaTime;
+}
+
 function update() {
     for(let x = 0; x < gridFrom.length; x++) {
         const top = x > 0 ? x - 1 : gridFrom.length - 1;
@@ -64,19 +72,23 @@ function update() {
             const a = gridFrom[x][y].a;
             const b = gridFrom[x][y].b;
 
-            gridTo[x][y].a = a + ((diffusionRateA * aDiffusion) - (a * b * b) + (feedRate * (1 - a))) * deltaTime;
-            gridTo[x][y].b = b + (((diffusionRateB * bDiffusion) + (a * b * b)) - ((killPlusFeed) * b)) * deltaTime;
+            gridTo[x][y].a = getA(a, aDiffusion, b);
+            gridTo[x][y].b = getB(b, bDiffusion, a);
         }
     }
     gridFrom = [...gridTo];
 }
 
-function draw() {
+function updateNTimes(n) {
     console.time('update');
-    for(let i = 0; i < 1000; i++) {
+    for(let i = 0; i < n; i++) {
         update();
     }
     console.timeEnd('update');
+}
+
+function draw() {
+    updateNTimes(1000);
     context.clearRect(0, 0, canvas.width, canvas.height);
     for(let x = 1; x < gridFrom.length - 1; x++) {
         for(let y = 1; y < gridFrom[x].length - 1; y++) {
