@@ -24,7 +24,7 @@ const diffusionRateA = 1;
 const diffusionRateB = 0.5;
 const feedRate = 0.0545;
 const killRate = 0.062;
-const deltaTime = 1;
+const deltaTime = 1.4;
 
 const laplacianMatrix = [
     [0.05, 0.2, 0.05],
@@ -43,9 +43,9 @@ function updateB(a, b, bDiffusion) {
 
 function update() {
     for(let x = 0; x < gridFrom.length; x++) {
+        const top = x > 0 ? x - 1 : gridFrom.length - 1;
+        const bottom = x < gridFrom.length - 1 ? x + 1 : 0;
         for(let y = 0; y < gridFrom[x].length; y++) {
-            const top = x > 0 ? x - 1 : gridFrom.length - 1;
-            const bottom = x < gridFrom.length - 1 ? x + 1 : 0;
             const left = y > 0 ? y - 1 : gridFrom[x].length - 1;
             const right = y < gridFrom[x].length - 1 ? y + 1 : 0;
 
@@ -79,12 +79,12 @@ function update() {
             gridTo[x][y].b = b;
         }
     }
-    [gridFrom, gridTo] = [gridTo, gridFrom];
+    gridFrom = [...gridTo];
 }
 
 function draw() {
     console.time('update');
-    for(let i = 0; i < 12500; i++) {
+    for(let i = 0; i < 1000; i++) {
         update();
     }
     console.timeEnd('update');
